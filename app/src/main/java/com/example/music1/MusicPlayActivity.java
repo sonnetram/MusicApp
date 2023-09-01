@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.music1.data.GlobalConstants;
 import com.example.music1.data.Song;
 import com.example.music1.service.MyMusicService;
+import com.example.music1.util.PlayModelHelper;
 import com.example.music1.util.TimeUtil;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -22,19 +23,19 @@ import java.util.TimerTask;
 
 public class MusicPlayActivity extends AppCompatActivity {
     private ImageView ivPlayPrPause, ivPre, ivNext;
-    private TextView tvTitle,tvCurTIme,tvDuration;
+    private TextView tvTitle,tvCurTIme,tvDuration,tvPlayMode;
     private SeekBar mSeekBar;
-    private boolean isSeekbarDragging;
-
     private ArrayList<Song> mSongArrayList;
     private int curSongIndex;
-    private MyMusicService.MyMusicBind mMusicBind;
-
     //当前播放的歌曲
     private Song mCurSong;
-    Timer timer = new Timer();
+    private MyMusicService.MyMusicBind mMusicBind;
+    private boolean isSeekbarDragging;
 
-    //conn 连接器的两个方法
+    private Timer timer ;
+    private int currentPlayMode = PlayModelHelper.PLAY_MODE_ORDER;
+
+
     private  ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -43,6 +44,7 @@ public class MusicPlayActivity extends AppCompatActivity {
             mMusicBind= (MyMusicService.MyMusicBind) iBinder;
             mMusicBind.updateMusicList(mSongArrayList);
             mMusicBind.updateCurrentMusicIndex(curSongIndex);
+//            mMusicBind.setPlayMode(currentPlayMode);
 
             updateUI();
 
@@ -53,47 +55,6 @@ public class MusicPlayActivity extends AppCompatActivity {
 
         }
     };
-
-    private void updateUI() {
-        //当前时间更新
-        int curProgress =   mMusicBind.getCurProgress();
-        tvCurTIme.setText(TimeUtil.millToTimeFormat(curProgress));
-        //总时间更新
-        int duration =   mMusicBind.getDuration();
-        tvDuration.setText(TimeUtil.millToTimeFormat(duration));
-        // 更新进度条
-        mSeekBar.setMax(duration);
-        mSeekBar.setProgress(curProgress);
-
-        updateSeekbar();
-
-    }
-
-    private void updateSeekbar() {
-        if(timer != null){
-            return;
-        }
-
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                int curProgress = mMusicBind.getCurProgress();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(!isSeekbarDragging && mMusicBind.isPlaying()) {
-//                            mSeekBar.setProgress(curProgress);
-                            tvCurTIme.setText(TimeUtil.millToTimeFormat(curProgress));
-                        }
-                    }
-                });
-
-            }
-
-
-        },0,200);
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +76,49 @@ public class MusicPlayActivity extends AppCompatActivity {
         startMusicService(); //启动服务播放音乐
     }
 
+    private void updateUI() {
+        //当前时间更新
+        int curProgress =   mMusicBind.getCurProgress();
+        updateCurTime(curProgress);
+
+        //总时间更新
+        int duration =   mMusicBind.getDuration();
+//        tvCurTIme.setText(TimeUtil.millToTimeFormat(curProgress));
+        tvDuration.setText(TimeUtil.millToTimeFormat(duration));
+        // 更新进度条
+        mSeekBar.setMax(duration);
+        mSeekBar.setProgress(curProgress);
+        updateSeekbar();
+
+    }
+
+    private void updateSeekbar() {
+        if(timer != null){
+            return;
+        }
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int curProgress = mMusicBind.getCurProgress();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!isSeekbarDragging && mMusicBind.isPlaying()) {
+                            mSeekBar.setProgress(curProgress);
+//                            tvCurTIme.setText(TimeUtil.millToTimeFormat(curProgress));
+                        }
+                    }
+                });
+
+            }
+
+
+        },0,200);
+    }
+
+
+
 
 
 
@@ -135,6 +139,7 @@ public class MusicPlayActivity extends AppCompatActivity {
         tvCurTIme = findViewById(R.id.tv_cur_time);
         tvDuration = findViewById(R.id.tv_duration);
         mSeekBar = findViewById(R.id.seek_bar_music);
+        tvPlayMode = findViewById(R.id.tv_play_mode);
 
         //对进度条进行监听
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -160,7 +165,7 @@ public class MusicPlayActivity extends AppCompatActivity {
         });
     }
     private void updateCurTime(int progress){
-
+        //当前时间更新
         tvCurTIme.setText(TimeUtil.millToTimeFormat(progress));
     }
     private void updateTitle() {
@@ -222,5 +227,10 @@ public class MusicPlayActivity extends AppCompatActivity {
 
 
     public void switchPlayMode(View view) {
+        int playMode = PlayModelHelper.changePlayMode(currentPlayMode);
+        currentPlayMode = playMode;
+        String strPlayMode = PlayModelHelper.strPlayMode(currentPlayMode);
+        tvPlayMode.setText(strPlayMode);
+        mMusicBind.setPlayMode(currentPlayMode);
+      }
     }
-}

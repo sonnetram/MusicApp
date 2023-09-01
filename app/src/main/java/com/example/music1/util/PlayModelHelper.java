@@ -5,7 +5,7 @@ public class PlayModelHelper {
     public static final int PLAY_MODE_CIRCLE = 1;
     public static final int PLAY_MODE_RANDOM = 2;
 
-    public static int   changePlayMode(int curMode){
+    public static int  changePlayMode(int curMode){
         switch (curMode){
             case PLAY_MODE_ORDER:
                 return PLAY_MODE_CIRCLE;
