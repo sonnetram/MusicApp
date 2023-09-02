@@ -1,15 +1,28 @@
 package com.example.music1.service;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import com.example.music1.R;
+import com.example.music1.data.GlobalConstants;
 import com.example.music1.data.Song;
 import com.example.music1.listener.MyPlayerListener;
 import com.example.music1.util.PlayModelHelper;
@@ -23,6 +36,8 @@ import java.util.Random;
 public class MyMusicService extends Service {
 
 
+    private static final String CHANNEL_ID = "song_play_channel";
+    private static final int FOREGROUND_ID = 1;
     //播放器
     private MediaPlayer mMediaPlayer;
     //数据源信息
@@ -30,6 +45,8 @@ public class MyMusicService extends Service {
     private int curSongIndex;
     private int curPlayMode;
     private MyPlayerListener myPlayerListener;
+    private RemoteViews remoteView;
+    private boolean haveNotification;
 
     @Override
     public void onCreate() {
@@ -43,11 +60,16 @@ public class MyMusicService extends Service {
         });
         mSongArrayList = new ArrayList<>(); // 不new 可能会造成空指针异常
 //        stopSelf();
+
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        createNotification();
         return super.onStartCommand(intent, flags, startId);
+
+
     }
 
     //返回值为IBinder中介  即自己实例化的Binder对象
@@ -274,6 +296,50 @@ public class MyMusicService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+    }
+
+
+    public void createNotification(){
+        if(haveNotification){
+            return;
+        }
+
+
+
+      NotificationManager  notificationManager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "音乐播放通知", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        // 自定义通知中的内容View
+        remoteView = new RemoteViews(getPackageName(), R.layout.notification_music_layout);
+        // 设置通知中的TextView文字
+//        Song song = getCurSong();
+//        if (song != null) {
+//            remoteView.setTextViewText(R.id.tv_notification_title, song.getSongName());
+//        }
+
+
+        Notification  notification= new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setWhen(System.currentTimeMillis())
+                .setContentText("音乐内容")
+                .setContentTitle("这是音乐标题")
+                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setCustomContentView(remoteView)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//                .setContentIntent(startSongPlayPendIntent)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_media_pause))
+                .build();
+
+
+        startForeground(FOREGROUND_ID, notification);
+        haveNotification = true;
+
+
 
 
     }
