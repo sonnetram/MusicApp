@@ -11,6 +11,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 import com.example.music1.data.Song;
+import com.example.music1.listener.MyPlayerListener;
 import com.example.music1.util.PlayModelHelper;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class MyMusicService extends Service {
     private ArrayList<Song> mSongArrayList;
     private int curSongIndex;
     private int curPlayMode;
-
+    private MyPlayerListener myPlayerListener;
 
     @Override
     public void onCreate() {
@@ -138,6 +139,15 @@ public class MyMusicService extends Service {
         public void setPlayMode(int mode){
          myMusicService.setPlayMode(mode);
         }
+        public void  setPlayerListener (MyPlayerListener playerListener){
+            myMusicService.setPlayerListener(playerListener);
+        }
+    }
+
+
+
+    public void  setPlayerListener (MyPlayerListener playerListener){
+        this.myPlayerListener = playerListener;
     }
 
     private void setPlayMode(int mode) {
@@ -188,6 +198,9 @@ public class MyMusicService extends Service {
             updateCurrentMusicIndex(nextIndex);
         }
 
+        if(myPlayerListener != null){
+            myPlayerListener.onNext(curSongIndex,getCurSong());
+        }
 
     }
 
@@ -204,6 +217,9 @@ public class MyMusicService extends Service {
                 preIndex = mSongArrayList.size() - 1;
             }
             updateCurrentMusicIndex(preIndex);
+        }
+        if(myPlayerListener != null){
+            myPlayerListener.onPre(curSongIndex,getCurSong());
         }
     }
     public void play() {

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.music1.data.GlobalConstants;
 import com.example.music1.data.Song;
+import com.example.music1.listener.MyPlayerListener;
 import com.example.music1.service.MyMusicService;
 import com.example.music1.util.PlayModelHelper;
 import com.example.music1.util.TimeUtil;
@@ -45,6 +46,40 @@ public class MusicPlayActivity extends AppCompatActivity {
             mMusicBind.updateMusicList(mSongArrayList);
             mMusicBind.updateCurrentMusicIndex(curSongIndex);
 //            mMusicBind.setPlayMode(currentPlayMode);
+            mMusicBind.setPlayerListener(new MyPlayerListener() {
+                @Override
+                public void onComplete(int songIndex, Song song) {
+
+                }
+
+                @Override
+                public void onPre(int songIndex, Song song) {
+                    curSongIndex = songIndex;
+                    mCurSong = song;
+                    updateTitle();
+                    updateUI();
+
+                }
+
+                @Override
+                public void onPause(int songIndex, Song song) {
+
+                }
+
+                @Override
+                public void onNext(int songIndex, Song song) {
+                    curSongIndex = songIndex;
+                    mCurSong = song;
+                    updateTitle();
+                    updateUI();
+
+                }
+
+                @Override
+                public void onPlay(int songIndex, Song song) {
+
+                }
+            });
 
             updateUI();
 
