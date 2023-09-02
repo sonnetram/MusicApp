@@ -16,6 +16,7 @@ import com.example.music1.util.PlayModelHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 //service和activity一样要注册
@@ -188,6 +189,8 @@ public class MyMusicService extends Service {
         if(curPlayMode == PlayModelHelper.PLAY_MODE_CIRCLE){
             updateCurrentMusicIndex(curPlayMode);
         }else if(curPlayMode == PlayModelHelper.PLAY_MODE_RANDOM){
+            int nextRandomIndex = getNextRandomIndex();
+            updateCurrentMusicIndex(nextRandomIndex);
 
 
         }else {
@@ -208,8 +211,8 @@ public class MyMusicService extends Service {
         if(curPlayMode == PlayModelHelper.PLAY_MODE_CIRCLE){
             updateCurrentMusicIndex(curPlayMode);
         }else if(curPlayMode == PlayModelHelper.PLAY_MODE_RANDOM){
-
-
+            int nextRandomIndex = getNextRandomIndex();
+            updateCurrentMusicIndex(nextRandomIndex);
         }else {
 
             int preIndex = curSongIndex - 1;
@@ -221,6 +224,12 @@ public class MyMusicService extends Service {
         if(myPlayerListener != null){
             myPlayerListener.onPre(curSongIndex,getCurSong());
         }
+    }
+    public int getNextRandomIndex(){
+       int size =  mSongArrayList.size();
+        Random random = new Random();
+       int randomIndex =  random.nextInt(size);
+        return  randomIndex;
     }
     public void play() {
         if(mMediaPlayer.isPlaying()){
@@ -265,5 +274,7 @@ public class MyMusicService extends Service {
             e.printStackTrace();
         }
 
+
     }
+
 }
