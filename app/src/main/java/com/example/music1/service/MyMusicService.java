@@ -42,6 +42,7 @@ public class MyMusicService extends Service {
             }
         });
         mSongArrayList = new ArrayList<>(); // 不new 可能会造成空指针异常
+//        stopSelf();
     }
 
     @Override
@@ -276,5 +277,6 @@ public class MyMusicService extends Service {
 
 
     }
+
 
 }

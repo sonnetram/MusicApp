@@ -157,14 +157,13 @@ public class MusicPlayActivity extends AppCompatActivity {
 
 
 
-    //通过bind 的形式启动 service
+
     private void startMusicService() {
-
+        //通过bind 的形式启动 service
         Intent intent = new Intent(this, MyMusicService.class);
-
-
-
         bindService(intent,conn,BIND_AUTO_CREATE);
+        //通过start的方式启动 service 可以同时进行
+        startService(intent);
     }
     public void initView(){
         ivPlayPrPause  = findViewById(R.id.iv_play_pause);
@@ -259,6 +258,11 @@ public class MusicPlayActivity extends AppCompatActivity {
             timer = null;
         }
     }
+    //假后台播放
+//    public void onBackPressed(){
+//        moveTaskToBack(true);
+//    }
+
 
 
     public void switchPlayMode(View view) {
@@ -268,4 +272,8 @@ public class MusicPlayActivity extends AppCompatActivity {
         tvPlayMode.setText(strPlayMode);
         mMusicBind.setPlayMode(currentPlayMode);
       }
+
+    public void back(View view) {
+        this.finish();
     }
+}
